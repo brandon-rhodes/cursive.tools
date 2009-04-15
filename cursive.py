@@ -8,25 +8,34 @@ textual_nodes = set([ 'block_quote', 'paragraph',
                       'list_item', 'term', 'definition_list_item', ])
 
 class Section(object):
-    """Maintains a counter of how many words are in a section."""
+    """Maintains a counter of how many words are in a section.
 
+    This class can be used to accumulate information about a section of
+    an RST file as it is processed.  A slot is provided for the section
+    title, and a counter is kept for the number of words.
+
+    """
     def __init__(self):
         self.title = ''
         self.words = 0
         self.subsections = []
 
     def create_subsection(self):
+        """Return a new object representing our next subsection."""
         ss = Section()
         self.subsections.append(ss)
         return ss
 
     def add_text(self, text):
+        """Record text (by counting words) belonging to this section."""
         self.words += len(text.split())
 
     def total(self):
+        """Compute how many words in this section and its subsections."""
         return sum([ self.words ] + [ ss.words for ss in self.subsections ])
 
     def report(self):
+        """Return a string reporting on this section and its subsections."""
         title = self.title
         if len(title) > 58:
             title = title[:57] + '\\'
@@ -36,6 +45,16 @@ class Section(object):
                 ''.join( '    ' + ss.report() for ss in self.subsections ))
 
 class MyVisitor(GenericNodeVisitor):
+    """A Visitor class; see the docutils for more details.
+
+    Each time a section is entered or exited, the ``self.sections``
+    stack grows or shrinks, so that the current section is always at the
+    stack's top.  Titles and text are both handed over to the current
+    Section object to be remembered.  When everything is over, and our
+    own ``astext()`` method is called, we return a little report showing
+    how many words per section the document contains.
+
+    """
     def __init__(self, *args, **kw):
         self.sections = [ Section() ]
         GenericNodeVisitor.__init__(self, *args, **kw)
@@ -62,10 +81,12 @@ class MyVisitor(GenericNodeVisitor):
         return self.sections[0].report()
 
 class MyWriter(Writer):
+    """Boilerplate attaching our Visitor to a docutils document."""
     def translate(self):
         visitor = MyVisitor(self.document)
         self.document.walkabout(visitor)
         self.output = '\n' + visitor.astext() + '\n'
 
 def console_script_cursive():
+    """Command-line script printing how many words are in a document."""
     core.publish_cmdline(writer=MyWriter())
