@@ -1,5 +1,8 @@
 """The `cursive` command-line program itself."""
 
+import sys
+from optparse import OptionParser
+
 from docutils.nodes import GenericNodeVisitor
 from docutils import core
 from docutils.writers import Writer
@@ -89,4 +92,29 @@ class MyWriter(Writer):
 
 def console_script_cursive():
     """Command-line script printing how many words are in a document."""
-    core.publish_cmdline(writer=MyWriter())
+    parser = OptionParser()
+    (options, args) = parser.parse_args()
+    if not args:
+        print """Welcome to cursive, the suite of tools for authors using Restructured Text!
+
+"""
+        sys.exit(2)
+    cmd = args[0]
+    if cmd.count('.') == 1:
+        try:
+            module = __import__(
+                'cursive.' + cmd,
+                fromlist=['cursive_plugin_command'],
+                )
+        except ImportError:
+            print 'cannot find a subcommand named: %r' % cmd
+            print ('have you installed the cursive.%s module?'
+                   % cmd.split('.')[0])
+            sys.exit(2)
+        sys.exit(module.cursive_plugin_command())
+    elif cmd == 'wc':
+        core.publish_cmdline(writer=MyWriter())
+    else:
+        print 'unrecognized command: %r' % cmd
+        print "run without a command or with command 'help' for usage"
+        sys.exit(2)
