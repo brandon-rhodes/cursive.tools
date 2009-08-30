@@ -2,6 +2,7 @@
 
 import sys
 from optparse import OptionParser
+from pkg_resources import iter_entry_points
 
 from docutils.nodes import GenericNodeVisitor
 from docutils import core
@@ -90,31 +91,28 @@ class MyWriter(Writer):
         self.document.walkabout(visitor)
         self.output = '\n' + visitor.astext() + '\n'
 
+def wc_command():
+    """Word count."""
+    core.publish_cmdline(writer=MyWriter())
+
 def console_script_cursive():
     """Command-line script printing how many words are in a document."""
+
     parser = OptionParser()
     (options, args) = parser.parse_args()
-    if not args:
-        print """Welcome to cursive, the suite of tools for authors using Restructured Text!
 
-"""
+    commands = {'wc': wc_command}
+    for point in iter_entry_points(group='cursive.commands', name=None):
+        commands[point.name] = point.load()
+
+    if not args or args[0] not in commands:
+        print("Welcome to cursive, the suite of tools for authors"
+              " using Restructured Text!\n")
+        for name, func in sorted(commands.items()):
+            docline = func.__doc__.split('\n')[0].strip().strip('.')
+            print(' {0} - {1}'.format(name, docline))
         sys.exit(2)
-    cmd = args[0]
-    if cmd.count('.') == 1:
-        try:
-            module = __import__(
-                'cursive.' + cmd,
-                fromlist=['cursive_plugin_command'],
-                )
-        except ImportError:
-            print 'cannot find a subcommand named: %r' % cmd
-            print ('have you installed the cursive.%s module?'
-                   % cmd.split('.')[0])
-            sys.exit(2)
-        sys.exit(module.cursive_plugin_command())
-    elif cmd == 'wc':
-        core.publish_cmdline(writer=MyWriter())
-    else:
-        print 'unrecognized command: %r' % cmd
-        print "run without a command or with command 'help' for usage"
-        sys.exit(2)
+
+    command = commands[args[0]]
+    del sys.argv[1]
+    command()
