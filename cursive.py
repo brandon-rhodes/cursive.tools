@@ -41,10 +41,13 @@ def console_script_cursive():
                       )
     (options, args) = parser.parse_args()
 
-    if not args or args[0] not in COMMANDS:
+    if not args:
         verbose_help(None, None, None, parser)
 
-    command = COMMANDS[args[0]]
+    try:
+        command = COMMANDS[args[0]]
+    except KeyError:
+        parser.error('Unknown command "%s"' % args[0])
     command(args[1:])
     return
 
