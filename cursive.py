@@ -38,9 +38,9 @@ def console_script_cursive():
                       )
     (options, args) = parser.parse_args()
 
-    if not args or args[0] not in commands:
+    if not args or args[0] not in COMMANDS:
         verbose_help(None, None, None, parser)
 
-    command = commands[args[0]]
+    command = COMMANDS[args[0]]
     del sys.argv[1]
     command()
