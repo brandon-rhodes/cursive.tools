@@ -98,7 +98,7 @@ class MyWriter(Writer):
         self.document.walkabout(visitor)
         self.output = '\n' + visitor.astext() + '\n'
 
-def command():
+def command(argv):
     """Word count."""
-    core.publish_cmdline(writer=MyWriter())
+    core.publish_cmdline(writer=MyWriter(), argv=argv)
 

@@ -30,6 +30,9 @@ def console_script_cursive():
         conflict_handler='resolve',
         description='Welcome to cursive, the suite of tools for authors using Restructured Text!',
         )
+    # stop when we hit an option without a '-' so the plugin can handle the rest
+    # of the command line
+    parser.disable_interspersed_args() 
     # Override the default --help behavior.  Leave -h alone to show short help.
     parser.add_option('--help',
                       action='callback',
@@ -42,5 +45,6 @@ def console_script_cursive():
         verbose_help(None, None, None, parser)
 
     command = COMMANDS[args[0]]
-    del sys.argv[1]
-    command()
+    command(args[1:])
+    return
+
