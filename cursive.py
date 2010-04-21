@@ -6,6 +6,7 @@ from pkg_resources import iter_entry_points
 
 # Load the command plugins.
 COMMANDS = {}
+
 for point in iter_entry_points(group='cursive.commands', name=None):
     COMMANDS[point.name] = point.load()
 
@@ -43,11 +44,14 @@ def console_script_cursive():
 
     if not args:
         verbose_help(None, None, None, parser)
+        exit(2)
 
     try:
         command = COMMANDS[args[0]]
     except KeyError:
         parser.error('Unknown command "%s"' % args[0])
-    command(args[1:])
+
+    del sys.argv[1]
+    command()
     return
 
