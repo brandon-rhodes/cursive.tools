@@ -1,6 +1,6 @@
 
-``cursive.tools``: Tools for authoring restructured text files
-==============================================================
+Tools for authoring restructured text files
+===========================================
 
 This package provides a ``cursive`` command that is intended to become
 the core of a whole set of tools for working with `reStructured Text`_
